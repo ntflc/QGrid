@@ -1,0 +1,3 @@
+1、将SelectTaxiGPSData文件夹内的数据导入MATLAB，并存为taxi2007020x_all.mat。
+
+2、运行SelectDataRegion.m，除去重复数据，并只留区域内的数据，存为taxi2007020x.mat。
