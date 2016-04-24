@@ -22,10 +22,10 @@ x_max = region_x + length;
 y_min = region_y - length;
 y_max = region_y + length;
 % 定义基本参数
-grid_length = 500;                          % 网格边长
-row_num = ceil((x_max - x_min) / grid_length);   % 网格行数=6
-col_num = ceil((y_max - y_min) / grid_length);   % 网格列数=6
-grid_num = row_num * col_num;               % 网格数=36
+grid_length = 500;                              % 网格边长
+row_num = ceil((x_max - x_min) / grid_length);	% 网格行数=6
+col_num = ceil((y_max - y_min) / grid_length);	% 网格列数=6
+grid_num = row_num * col_num;                   % 网格数=36
 
 % 将GPS数据按时间片进行划分，以便后面选择指定时间段内的数据
 delta_t = 3600; % 这里选择Δt=1小时
