@@ -22,9 +22,9 @@ x_max = region_x + length;
 y_min = region_y - length;
 y_max = region_y + length;
 % 定义基本参数
-grid_length = 500.0;                            % 网格边长
-row_num = ceil((x_max - x_min) / grid_length);  % 网格行数=6
-col_num = ceil((y_max - y_min) / grid_length);  % 网格列数=6
+grid_length = 500;                              % 网格边长
+row_num = ceil((x_max - x_min) / grid_length);	% 网格行数=6
+col_num = ceil((y_max - y_min) / grid_length);	% 网格列数=6
 grid_num = row_num * col_num;                   % 网格数=36
 
 % 将GPS数据按时间片进行划分，以便后面选择指定时间段内的数据
@@ -138,7 +138,7 @@ grid_list8 = zeros(grid_num, 1);
 grid_list9 = zeros(grid_num, 1);
 for i = 1:row_num
     for j = 1:col_num
-        id = (i - 1) * row_num + j;
+        id = (j - 1) * row_num + i;
         grid_list1(id) = grid_cnt1(i, j);
         grid_list2(id) = grid_cnt2(i, j);
         grid_list3(id) = grid_cnt3(i, j);

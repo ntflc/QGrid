@@ -10,10 +10,10 @@ avg = sum(grid_cnt) / grid_num;
 [RTable] = RewardTable(row_num, col_num);
 
 % 通过函数QLearning计算Q值表
-Q = zeros(grid_num, grid_num, grid_num);
+QTable = zeros(grid_num, grid_num, grid_num);
 for dest_grid = 1:grid_num
-    Q(:, :, dest_grid) = QLearning(RTable(:, :, dest_grid), grid_cnt, avg);
+    QTable(:, :, dest_grid) = QLearning(RTable(:, :, dest_grid), grid_cnt, avg);
 end
 
 % 保存Q值表
-save QTable Q
+save QTable QTable
