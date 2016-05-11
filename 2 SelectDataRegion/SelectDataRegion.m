@@ -29,6 +29,8 @@ x_min = region_x - length;
 x_max = region_x + length;
 y_min = region_y - length;
 y_max = region_y + length;
+% 定义网格边长
+grid_length = 500;
 
 % 去除不在区域范围内的数据
 taxi20070201 = taxi20070201((taxi20070201(:,2) >= x_min) & (taxi20070201(:,2) <= x_max) & (taxi20070201(:,3) >= y_min) & (taxi20070201(:,3) <= y_max),:);
@@ -40,6 +42,18 @@ taxi20070206 = taxi20070206((taxi20070206(:,2) >= x_min) & (taxi20070206(:,2) <=
 taxi20070207 = taxi20070207((taxi20070207(:,2) >= x_min) & (taxi20070207(:,2) <= x_max) & (taxi20070207(:,3) >= y_min) & (taxi20070207(:,3) <= y_max),:);
 taxi20070208 = taxi20070208((taxi20070208(:,2) >= x_min) & (taxi20070208(:,2) <= x_max) & (taxi20070208(:,3) >= y_min) & (taxi20070208(:,3) <= y_max),:);
 taxi20070209 = taxi20070209((taxi20070209(:,2) >= x_min) & (taxi20070209(:,2) <= x_max) & (taxi20070209(:,3) >= y_min) & (taxi20070209(:,3) <= y_max),:);
+
+% 对每条数据，添加2列，第一列为当前所在网格编号，第二列为上一个时间点所在网格编号
+row_num = ceil((y_max- y_min) / grid_length);
+[taxi20070201] = AddGridInfo(taxi20070201, grid_length, x_min, y_min, row_num);
+[taxi20070202] = AddGridInfo(taxi20070202, grid_length, x_min, y_min, row_num);
+[taxi20070203] = AddGridInfo(taxi20070203, grid_length, x_min, y_min, row_num);
+[taxi20070204] = AddGridInfo(taxi20070204, grid_length, x_min, y_min, row_num);
+[taxi20070205] = AddGridInfo(taxi20070205, grid_length, x_min, y_min, row_num);
+[taxi20070206] = AddGridInfo(taxi20070206, grid_length, x_min, y_min, row_num);
+[taxi20070207] = AddGridInfo(taxi20070207, grid_length, x_min, y_min, row_num);
+[taxi20070208] = AddGridInfo(taxi20070208, grid_length, x_min, y_min, row_num);
+[taxi20070209] = AddGridInfo(taxi20070209, grid_length, x_min, y_min, row_num);
 
 % 保存区域范围内的数据
 save taxi20070201 taxi20070201

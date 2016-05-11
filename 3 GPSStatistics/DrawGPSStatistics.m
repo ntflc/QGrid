@@ -1,12 +1,13 @@
-% 将GridCountStatistics中的数据绘制成图表
+% 将每天每个网格中的数据量占网格总数据量的比例绘制成图表
 % 由图标证明用过去一段时间学习得到的Q值表可以用于消息传递
 
-% 获取GridCountStatistics中的数据，包括网格行数、列数、网格总数、GPS数量
+% 通过函数GridCountStatistics获取行数、列数、网格数、GPS数据
+% 其中GPS数据grid_list为36行9列，表示每个网格每天的数据量
 [row_num, col_num, grid_num, grid_list] = GridCountStatistics();
 
 % 处理数据，将GPS数量计算为GPS占比
 taxi_cnt = sum(grid_list);
-for i = 1:9
+for i = 1:days
     grid_list(:, i) = grid_list(:, i) / taxi_cnt(1, i);
 end
 
