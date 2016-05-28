@@ -6,6 +6,7 @@
 [row_num, col_num, grid_num, grid_list] = GridCountStatistics();
 
 % 处理数据，将GPS数量计算为GPS占比
+days = 9;
 taxi_cnt = sum(grid_list);
 for i = 1:days
     grid_list(:, i) = grid_list(:, i) / taxi_cnt(1, i);

@@ -12,12 +12,12 @@ for dest_grid = 1:grid_num
     % 每一种目标网格情况下，计算其Reward表
     for i_grid = 1:grid_num
         % 计算i网格的行、列值
-        i_row = ceil(i_grid / col_num);
-        i_col = i_grid - (i_row - 1) * col_num;
+        i_col = ceil(i_grid / row_num);
+        i_row = i_grid - (i_col - 1) * row_num;
         for j_grid = 1:grid_num
             % 计算j网格的行、列值
-            j_row = ceil(j_grid / col_num);
-            j_col = j_grid - (j_row - 1) * col_num;
+            j_col = ceil(j_grid / row_num);
+            j_row = j_grid - (j_col - 1) * row_num;
             % 判断i到j是否可达，如果可达且j为目标网格则Reward值为100，如果可达且j非目标网格则Reward值为0
             % 判断i和j是否为同一点
             if (i_grid == j_grid)

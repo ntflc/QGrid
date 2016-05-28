@@ -1,4 +1,4 @@
-% QGrid，使用贪婪选择策略
+% GPSR
 
 % 导入数据
 load('taxi20070201.mat');
@@ -27,8 +27,6 @@ data = [];
 
 % 导入数据
 load('taxi20070209.mat');
-% 导入Q值表
-load('QTable.mat');
 
 % QGrid
 for radius = 200:100:500 %radius = 200:100:500
@@ -128,39 +126,38 @@ for radius = 200:100:500 %radius = 200:100:500
                                 message(message_i, 12) = 1;
                                 disp('**********成功一条**********');
                                 continue;
-                            % 否则从Q值表中寻找下一跳网格，然后寻找下一跳车辆
+                            % 否则考虑周围距离目标节点最近的车辆为下一跳车辆（可以为本身）
                             else
-                                [max_q, index_q] = max(QTable(:, :, dest), [], 2);
-                                next_grid = index_q(state);
-                                disp('找到下一跳网格');
-                                % 找到网格后，找到此时刻在此网格内的车辆
-                                grid_taxi = taxi_gps_message(taxi_gps_message(:, 6) == next_grid, :);
-                                % 如果网格中有车辆，找出下一跳车辆
-                                if size(grid_taxi, 1) > 0
-                                    % 记录在通信范围内的车辆数
-                                    tmp_cnt = 0;
-                                    for tmp_i = 1:size(grid_taxi, 1)
-                                        tmp_x1 = taxi_gps_message(curr_message_row, 2);
-                                        tmp_y1 = taxi_gps_message(curr_message_row, 3);
-                                        tmp_x2 = grid_taxi(tmp_i, 2);
-                                        tmp_y2 = grid_taxi(tmp_i, 3);
-                                        tmp_dist = CalculateDistance(tmp_x1, tmp_y1, tmp_x2, tmp_y2);
-                                        if tmp_dist <= radius
-                                            tmp_cnt = tmp_cnt + 1;
-                                            tmp_grid_taxi(tmp_cnt, :) = grid_taxi(tmp_i, :);
+                                % 先筛选出当前节点周围方形区域内的节点（正方形边长=半径*2）
+                                neighbor_candidate = taxi_gps_message((taxi_gps_message(:,2)>(taxi_gps_message(curr_message_row,2)-radius))&...
+                                	(taxi_gps_message(:,2)<(taxi_gps_message(curr_message_row,2)+radius))&...
+                                   	(taxi_gps_message(:,3)>(taxi_gps_message(curr_message_row,3)-radius))&...
+                                   	(taxi_gps_message(:,3)<(taxi_gps_message(curr_message_row,3)+radius)),:);
+                                % 从正方形区域内，筛选出传输范围内的节点
+                                if size(neighbor_candidate, 1) > 0
+                                    neighbor_num = 0;
+                                    neighbor = [];
+                                    for candidate_i = 1:size(neighbor_candidate, 1)
+                                        candidate_x1 = neighbor_candidate(candidate_i, 2);
+                                        candidate_y1 = neighbor_candidate(candidate_i, 3);
+                                        candidate_x2 = taxi_gps_message(curr_message_row, 2);
+                                        candidate_y2 = taxi_gps_message(curr_message_row, 3);
+                                        candidate_dist = CalculateDistance(candidate_x1, candidate_y1, candidate_x2, candidate_y2);
+                                        if candidate_dist <= radius
+                                            neighbor_num = neighbor_num + 1;
+                                            neighbor(neighbor_num, :) = neighbor_candidate(candidate_i, :);
                                         end
                                     end
-                                    % 在所有通信范围内的车中找出距离最小的，传递消息
-                                    if tmp_cnt > 0
-                                        % 找出最小距离的节点
-                                        delta_x = tmp_grid_taxi(:, 2) - message(message_i, 7);
-                                        delta_y = tmp_grid_taxi(:, 3) - message(message_i, 8);
+                                    % 从传输范围内的节点，寻找距离目标节点最近的节点传递消息
+                                    if neighbor_num > 0
+                                        delta_x = neighbor(:, 2) - message(message_i, 7);
+                                        delta_y = neighbor(:, 3) - message(message_i, 8);
                                         neighbor_dist = sqrt(delta_x.^2 + delta_y.^2);
                                         min_dist = min(neighbor_dist);
                                         % 如果该节点到目标节点距离比当前节点到目标节点距离更近，则传递该消息
                                         if min_dist < curr_dist
                                             % 选出距离最短的下一跳车辆信息，可能有多个
-                                            next_taxi = tmp_grid_taxi(neighbor_dist == min_dist,:);
+                                            next_taxi = neighbor(neighbor_dist == min_dist,:);
                                             % 如果有多个，随机选择一个；如果只有一个，随机的结果还是本身
                                             next_taxi_row = randi(size(next_taxi,1));
                                             next_taxi = next_taxi(next_taxi_row,:);
@@ -168,60 +165,14 @@ for radius = 200:100:500 %radius = 200:100:500
                                             message(message_i, 4) = next_taxi(1, 6);
                                             message(message_i, 5) = next_taxi(1, 1);
                                             message(message_i, 11) = message(message_i, 11) + 1;
-                                            disp('消息传递到下一跳网格中的车辆');
+                                            disp('消息传递到周围的车辆');
                                             continue;
                                         end
                                     else
                                         continue;
                                     end
-                                % 如果网格中无车辆，考虑周围距离目标节点最近的车辆为下一跳车辆（可以为本身）
                                 else
-                                    % 先筛选出当前节点周围方形区域内的节点（正方形边长=半径*2）
-                                    neighbor_candidate = taxi_gps_message((taxi_gps_message(:,2)>(taxi_gps_message(curr_message_row,2)-radius))&...
-                                    	(taxi_gps_message(:,2)<(taxi_gps_message(curr_message_row,2)+radius))&...
-                                    	(taxi_gps_message(:,3)>(taxi_gps_message(curr_message_row,3)-radius))&...
-                                    	(taxi_gps_message(:,3)<(taxi_gps_message(curr_message_row,3)+radius)),:);
-                                    % 从正方形区域内，筛选出传输范围内的节点
-                                    if size(neighbor_candidate, 1) > 0
-                                        neighbor_num = 0;
-                                        neighbor = [];
-                                        for candidate_i = 1:size(neighbor_candidate, 1)
-                                            candidate_x1 = neighbor_candidate(candidate_i, 2);
-                                            candidate_y1 = neighbor_candidate(candidate_i, 3);
-                                            candidate_x2 = taxi_gps_message(curr_message_row, 2);
-                                            candidate_y2 = taxi_gps_message(curr_message_row, 3);
-                                            candidate_dist = CalculateDistance(candidate_x1, candidate_y1, candidate_x2, candidate_y2);
-                                            if candidate_dist <= radius
-                                                neighbor_num = neighbor_num + 1;
-                                                neighbor(neighbor_num, :) = neighbor_candidate(candidate_i, :);
-                                            end
-                                        end
-                                        % 从传输范围内的节点，寻找距离目标节点最近的节点传递消息
-                                        if neighbor_num > 0
-                                            delta_x = neighbor(:, 2) - message(message_i, 7);
-                                            delta_y = neighbor(:, 3) - message(message_i, 8);
-                                            neighbor_dist = sqrt(delta_x.^2 + delta_y.^2);
-                                            min_dist = min(neighbor_dist);
-                                            % 如果该节点到目标节点距离比当前节点到目标节点距离更近，则传递该消息
-                                            if min_dist < curr_dist
-                                                % 选出距离最短的下一跳车辆信息，可能有多个
-                                                next_taxi = neighbor(neighbor_dist == min_dist,:);
-                                                % 如果有多个，随机选择一个；如果只有一个，随机的结果还是本身
-                                                next_taxi_row = randi(size(next_taxi,1));
-                                                next_taxi = next_taxi(next_taxi_row,:);
-                                                % 更新message信息
-                                                message(message_i, 4) = next_taxi(1, 6);
-                                                message(message_i, 5) = next_taxi(1, 1);
-                                                message(message_i, 11) = message(message_i, 11) + 1;
-                                                disp('消息传递到周围的车辆');
-                                                continue;
-                                            end
-                                        else
-                                            continue;
-                                        end
-                                    else
-                                        continue;
-                                    end
+                                    continue;
                                 end
                             end
                         else
@@ -254,4 +205,4 @@ for radius = 200:100:500 %radius = 200:100:500
     end
 end
 
-xlswrite('QGriD_G.xls', data, 'sheet1', 'A1');
+xlswrite('GPSR.xls', data, 'sheet1', 'A1');
